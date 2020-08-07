@@ -6,4 +6,7 @@ compile:
   clang++ -o pointer_test -Wall -W -std=c++14 -Og main.cpp
   g++ -o pointer_test -Wall -W -std=c++14 -O0 main.cpp
   g++ -o pointer_test -Wall -W -std=c++14 -Og main.cpp
+  
+perf:
+  sudo perf stat -e cycles,instructions,cache-references,cache-misses,bus-cycles ./pointer_test
 ```
