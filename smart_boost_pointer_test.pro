@@ -8,4 +8,4 @@ SOURCES += \
 
 
 # custom values, manually added
-QMAKE_CXXFLAGS += -O2
+QMAKE_CXXFLAGS += -Og
