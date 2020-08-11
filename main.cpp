@@ -45,11 +45,11 @@ inline void intrusive_ptr_release(X1* x) {
 int main()
 {
     size_t arrsize = 10000000;
-    size_t loop_array_count = 100;
+    size_t loop_array_count = 200;
 
     std::chrono::duration<double> dur;
 
-    /*
+    // /*
     std::shared_ptr<X2>** arr_sharedptrs = new std::shared_ptr<X2>*[arrsize];
 
     for (size_t i = 0; i < arrsize; i++) {
@@ -68,12 +68,12 @@ int main()
     dur = std::chrono::system_clock::now() - start;
 
     std::cout << "Time taken to iterate over " << arrsize << " objects managed by std::shared_ptr, " << loop_array_count
-              << " times over takes " << dur.count() << "seconds" << std::endl;
+              << " times over: " << dur.count() << "seconds" << std::endl;
 
-    */
+    // */
 
 
-    // /*
+    /*
 
     boost::intrusive_ptr<X1>** arr_boostptrs = new boost::intrusive_ptr<X1>*[arrsize];
 
@@ -96,8 +96,8 @@ int main()
     dur = std::chrono::system_clock::now() - start;
 
     std::cout << "Time taken to iterate over " << arrsize << " objects managed by boost::intrusive_ptr, " << loop_array_count
-              << " times over takes " << dur.count() << " seconds" << std::endl;
-    // */
+              << " times over: " << dur.count() << " seconds" << std::endl;
+    */
 
     // add sleep
     // std::this_thread::sleep_for(std::chrono::seconds(20));
