@@ -3,8 +3,11 @@
 #include <thread>
 #include <memory>
 #include <string>
-#include <cstdlib>
 #include <random>
+
+#include <cstdio>
+#include <csignal>
+#include <unistd.h>
 
 #include <boost/intrusive_ptr.hpp>
 #include <boost/atomic.hpp>
@@ -45,7 +48,7 @@ inline void intrusive_ptr_release(X1* x) {
 
 void shared_ptr_test(const size_t arrsize, const size_t loop_array_count, const size_t* arr_randindex) {
 
-    std::chrono::duration<double> dur;
+    // std::chrono::duration<double> dur;
 
     std::shared_ptr<X2> *arr_sharedptrs = new std::shared_ptr<X2>[arrsize];
 
@@ -53,7 +56,7 @@ void shared_ptr_test(const size_t arrsize, const size_t loop_array_count, const 
         arr_sharedptrs[i] = std::make_shared<X2>("Dilbert", 40, 188.8);
     }
 
-    auto start = std::chrono::system_clock::now();
+    // auto start = std::chrono::system_clock::now();
 
     for(size_t i = 0; i < loop_array_count; i++) {
         for (size_t j = 0; j < arrsize; j++) {
@@ -63,16 +66,18 @@ void shared_ptr_test(const size_t arrsize, const size_t loop_array_count, const 
         }
     }
 
+    /*
     dur = std::chrono::system_clock::now() - start;
 
     std::cout << "Time taken to randomly access " << arrsize << " objects managed by std::shared_ptr "
               << loop_array_count << " times over: " << dur.count() << "seconds" << std::endl;
+    */
 }
 
 
 void intrusive_ptr_test(const size_t arrsize, const size_t loop_array_count, const size_t* arr_randindex) {
 
-    std::chrono::duration<double> dur;
+    // std::chrono::duration<double> dur;
 
     boost::intrusive_ptr<X1> *arr_boostptrs = new boost::intrusive_ptr<X1>[arrsize];
 
@@ -80,7 +85,7 @@ void intrusive_ptr_test(const size_t arrsize, const size_t loop_array_count, con
         arr_boostptrs[i] = new X1("Dilbert", 40, 188.8);
     }
 
-    auto start2 = std::chrono::system_clock::now();
+    // auto start2 = std::chrono::system_clock::now();
 
     for (size_t i = 0; i < loop_array_count; i++) {
         for(size_t j = 0; j < arrsize; j++) {
@@ -90,11 +95,13 @@ void intrusive_ptr_test(const size_t arrsize, const size_t loop_array_count, con
         }
     }
 
+    /*
     dur = std::chrono::system_clock::now() - start2;
 
     std::cout << "Time taken to randomly access " << arrsize << " objects managed by "
                  "boost::intrusive_ptr, " << loop_array_count << " times over: "
               << dur.count() << " seconds" << std::endl;
+    */
 }
 
 int main()
@@ -114,9 +121,22 @@ int main()
         arr_randindex[i] = rand_dist(rng);
     }
 
+    int pid = getpid();
+    int cpid = fork();
 
-    // shared_ptr_test(arrsize, loop_array_count, arr_randindex);
-    intrusive_ptr_test(arrsize, loop_array_count, arr_randindex);
+    if (cpid == 0) {
+        char buf[200];
+        sprintf(buf, "perf stat -e instructions:u,L1-dcache-loads:u,L1-dcache-load-misses:u,cache-misses:u,itlb_misses.walk_completed:u -p %d 2>&1", pid);
+        execl("/bin/sh", "sh", "-c", buf, NULL);
+    } else {
+        setpgid(cpid, 0);
+
+        // shared_ptr_test(arrsize, loop_array_count, arr_randindex);
+        intrusive_ptr_test(arrsize, loop_array_count, arr_randindex);
+
+        kill (-cpid, SIGINT);
+    }
+
 
 
     // add sleep
