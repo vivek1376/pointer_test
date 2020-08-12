@@ -3,6 +3,8 @@
 #include <thread>
 #include <memory>
 #include <string>
+#include <cstdlib>
+#include <random>
 
 #include <boost/intrusive_ptr.hpp>
 #include <boost/atomic.hpp>
@@ -41,63 +43,81 @@ inline void intrusive_ptr_release(X1* x) {
         delete x;
 }
 
-
-int main()
-{
-    size_t arrsize = 10000000;
-    size_t loop_array_count = 200;
+void shared_ptr_test(const size_t arrsize, const size_t loop_array_count, const size_t* arr_randindex) {
 
     std::chrono::duration<double> dur;
 
-    // /*
-    std::shared_ptr<X2>** arr_sharedptrs = new std::shared_ptr<X2>*[arrsize];
+    std::shared_ptr<X2> *arr_sharedptrs = new std::shared_ptr<X2>[arrsize];
 
     for (size_t i = 0; i < arrsize; i++) {
-        arr_sharedptrs[i] = new std::shared_ptr<X2> (new X2("Dilbert", 40, 188.8));
+        arr_sharedptrs[i] = std::make_shared<X2>("Dilbert", 40, 188.8);
     }
 
     auto start = std::chrono::system_clock::now();
 
     for(size_t i = 0; i < loop_array_count; i++) {
         for (size_t j = 0; j < arrsize; j++) {
-            (*arr_sharedptrs[j])->age++;
-            (*arr_sharedptrs[j])->weight += 0.1f;
+            std::shared_ptr<X2> temp(arr_sharedptrs[arr_randindex[j]]);
+            temp->age++;
+            temp->weight += 0.1f;
         }
     }
 
     dur = std::chrono::system_clock::now() - start;
 
-    std::cout << "Time taken to iterate over " << arrsize << " objects managed by std::shared_ptr, " << loop_array_count
-              << " times over: " << dur.count() << "seconds" << std::endl;
+    std::cout << "Time taken to randomly access " << arrsize << " objects managed by std::shared_ptr "
+              << loop_array_count << " times over: " << dur.count() << "seconds" << std::endl;
+}
 
-    // */
 
+void intrusive_ptr_test(const size_t arrsize, const size_t loop_array_count, const size_t* arr_randindex) {
 
-    /*
+    std::chrono::duration<double> dur;
 
-    boost::intrusive_ptr<X1>** arr_boostptrs = new boost::intrusive_ptr<X1>*[arrsize];
+    boost::intrusive_ptr<X1> *arr_boostptrs = new boost::intrusive_ptr<X1>[arrsize];
 
-    // store pointers
     for (size_t i = 0; i < arrsize; i++) {
-        arr_boostptrs[i] = new boost::intrusive_ptr<X1> (new X1("Dilbert", 40, 188.8));
+        arr_boostptrs[i] = new X1("Dilbert", 40, 188.8);
     }
 
-    auto start = std::chrono::system_clock::now();
+    auto start2 = std::chrono::system_clock::now();
 
     for (size_t i = 0; i < loop_array_count; i++) {
-        for(size_t j = 0; j < arrsize; j++)
-        {
-            // boost::intrusive_ptr<X1> myX(new X1("Dilbert", 40, 188.8));
-            (*arr_boostptrs[j])->age++;
-            (*arr_boostptrs[j])->weight += 0.1f;
+        for(size_t j = 0; j < arrsize; j++) {
+            boost::intrusive_ptr<X1> temp(arr_boostptrs[arr_randindex[j]]);
+            temp->age++;
+            temp->weight += 0.1f;
         }
     }
 
-    dur = std::chrono::system_clock::now() - start;
+    dur = std::chrono::system_clock::now() - start2;
 
-    std::cout << "Time taken to iterate over " << arrsize << " objects managed by boost::intrusive_ptr, " << loop_array_count
-              << " times over: " << dur.count() << " seconds" << std::endl;
-    */
+    std::cout << "Time taken to randomly access " << arrsize << " objects managed by "
+                 "boost::intrusive_ptr, " << loop_array_count << " times over: "
+              << dur.count() << " seconds" << std::endl;
+}
+
+int main()
+{
+    const size_t arrsize = 1000000;
+    const size_t loop_array_count = 200;
+
+    // https://stackoverflow.com/a/13445752/9894266
+    std::random_device rand_dev;
+    std::mt19937 rng(rand_dev());
+    std::uniform_int_distribution<std::mt19937::result_type> rand_dist(0, arrsize - 1);
+
+    size_t* arr_randindex = new size_t[arrsize];
+
+    // fill an array with random indexes
+    for (size_t i = 0; i < arrsize; i++) {
+        arr_randindex[i] = rand_dist(rng);
+    }
+
+
+    // shared_ptr_test(arrsize, loop_array_count, arr_randindex);
+    intrusive_ptr_test(arrsize, loop_array_count, arr_randindex);
+
 
     // add sleep
     // std::this_thread::sleep_for(std::chrono::seconds(20));
