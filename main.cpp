@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 #include <boost/intrusive_ptr.hpp>
-#include <boost/atomic.hpp>
+// #include <boost/atomic.hpp>
 
 
 class X1 {
@@ -126,7 +126,7 @@ int main()
 
     if (cpid == 0) {
         char buf[200];
-        sprintf(buf, "perf stat -e instructions:u,L1-dcache-loads:u,L1-dcache-load-misses:u,cache-misses:u,itlb_misses.walk_completed:u -p %d 2>&1", pid);
+        sprintf(buf, "perf stat -e instructions:u,L1-dcache-loads:u,L1-dcache-load-misses:u,cache-misses:u,dTLB-load-misses:u,dTLB-loads:u -p %d 2>&1", pid);
         execl("/bin/sh", "sh", "-c", buf, NULL);
     } else {
         setpgid(cpid, 0);
