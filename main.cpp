@@ -60,9 +60,8 @@ void shared_ptr_test(const size_t arrsize, const size_t loop_array_count, const 
 
     for(size_t i = 0; i < loop_array_count; i++) {
         for (size_t j = 0; j < arrsize; j++) {
-            std::shared_ptr<X2> temp(arr_sharedptrs[arr_randindex[j]]);
-            temp->age++;
-            temp->weight += 0.1f;
+            ++arr_sharedptrs[arr_randindex[j]]->age;
+            arr_sharedptrs[arr_randindex[j]]->weight += 0.1f;
         }
     }
 
@@ -89,9 +88,8 @@ void intrusive_ptr_test(const size_t arrsize, const size_t loop_array_count, con
 
     for (size_t i = 0; i < loop_array_count; i++) {
         for(size_t j = 0; j < arrsize; j++) {
-            boost::intrusive_ptr<X1> temp(arr_boostptrs[arr_randindex[j]]);
-            temp->age++;
-            temp->weight += 0.1f;
+            ++arr_boostptrs[arr_randindex[j]]->age;
+            arr_boostptrs[arr_randindex[j]]->weight += 0.1f;            
         }
     }
 
